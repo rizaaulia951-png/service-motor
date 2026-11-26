@@ -42,11 +42,17 @@ class ServisMotorController extends Controller
             ->with('success', 'Data pelanggan berhasil ditambahkan!');
     }
 
+    // EDIT PELANGGAN - MENGGUNAKAN VIEW YANG SAMA
     public function editPelanggan($id_pelanggan)
     {
-        $pelanggan = Pelanggan::findOrFail($id_pelanggan);
+        $pelanggan = Pelanggan::all();
 
-        return view('edit-pelanggan', compact('pelanggan'));
+        $dataEdit = Pelanggan::findOrFail($id_pelanggan);
+
+        return view('pelanggan', compact(
+            'pelanggan',
+            'dataEdit'
+        ));
     }
 
     public function updatePelanggan(Request $request, $id_pelanggan)
@@ -138,11 +144,17 @@ class ServisMotorController extends Controller
         ], 201);
     }
 
+    // EDIT KENDARAAN - MENGGUNAKAN VIEW YANG SAMA
     public function editKendaraan($id)
     {
-        $kendaraan = Kendaraan::findOrFail($id);
+        $kendaraan = Kendaraan::all();
 
-        return view('edit-kendaraan', compact('kendaraan'));
+        $dataEditKendaraan = Kendaraan::findOrFail($id);
+
+        return view('kendaraan', compact(
+            'kendaraan',
+            'dataEditKendaraan'
+        ));
     }
 
     public function updateKendaraan(Request $request, $id)
@@ -243,17 +255,23 @@ class ServisMotorController extends Controller
         ], 201);
     }
 
+    // EDIT DAFTAR SERVICE - MENGGUNAKAN VIEW YANG SAMA
     public function editDaftarService($id)
     {
-        $data = DaftarService::findOrFail($id);
+        $data = DaftarService::with('pelanggan')
+            ->orderBy('id_servis_pelanggan', 'desc')
+            ->get();
 
         $pelanggan = Pelanggan::all();
         $kendaraan = Kendaraan::all();
 
-        return view('edit-daftar-service', compact(
+        $dataEditDaftarService = DaftarService::findOrFail($id);
+
+        return view('daftar-service', compact(
             'data',
             'pelanggan',
-            'kendaraan'
+            'kendaraan',
+            'dataEditDaftarService'
         ));
     }
 
@@ -274,7 +292,6 @@ class ServisMotorController extends Controller
         )->exists();
 
         if ($sudahMemilikiDataService) {
-            // Keluhan ikut diperbarui pada riwayat servis
             DataService::where(
                 'id_servis_pelanggan',
                 $daftar->id_servis_pelanggan
@@ -311,7 +328,7 @@ class ServisMotorController extends Controller
 
 
     // ==========================================
-    // 4. RIWAYAT / DATA SERVICE
+    // 4. DATA SERVICE
     // ==========================================
 
     public function indexDataService(Request $request)
@@ -365,23 +382,25 @@ class ServisMotorController extends Controller
             ->with('success', 'Riwayat servis berhasil disimpan!');
     }
 
-    // EDIT RIWAYAT SERVICE
+    // EDIT DATA SERVICE - MENGGUNAKAN VIEW YANG SAMA
     public function editDataService($id)
     {
-        $data = DataService::findOrFail($id);
+        $data = DataService::orderBy('id', 'desc')->get();
 
         $daftar = DaftarService::orderBy(
             'id_servis_pelanggan',
             'desc'
         )->get();
 
-        return view('edit-data-service', compact(
+        $dataEditService = DataService::findOrFail($id);
+
+        return view('data-service', compact(
             'data',
-            'daftar'
+            'daftar',
+            'dataEditService'
         ));
     }
 
-    // UPDATE RIWAYAT SERVICE
     public function updateDataService(Request $request, $id)
     {
         $validasi = $request->validate([
@@ -397,7 +416,6 @@ class ServisMotorController extends Controller
             ->with('success', 'Riwayat servis berhasil diperbarui!');
     }
 
-    // HAPUS RIWAYAT SERVICE
     public function hapusDataService($id)
     {
         $data = DataService::findOrFail($id);
@@ -464,23 +482,25 @@ class ServisMotorController extends Controller
             ->with('success', 'Pembayaran berhasil disimpan!');
     }
 
-    // EDIT PEMBAYARAN
+    // EDIT PEMBAYARAN - MENGGUNAKAN VIEW YANG SAMA
     public function editPembayaran($id)
     {
-        $data = PembayaranService::findOrFail($id);
+        $data = PembayaranService::orderBy('id', 'desc')->get();
 
         $dataService = DataService::select('id_servis_pelanggan')
             ->distinct()
             ->orderBy('id_servis_pelanggan', 'desc')
             ->get();
 
-        return view('edit-pembayaran', compact(
+        $dataEditPembayaran = PembayaranService::findOrFail($id);
+
+        return view('pembayaran', compact(
             'data',
-            'dataService'
+            'dataService',
+            'dataEditPembayaran'
         ));
     }
 
-    // UPDATE PEMBAYARAN
     public function updatePembayaran(Request $request, $id)
     {
         $validasi = $request->validate([
@@ -497,7 +517,6 @@ class ServisMotorController extends Controller
             ->with('success', 'Pembayaran berhasil diperbarui!');
     }
 
-    // HAPUS PEMBAYARAN
     public function hapusPembayaran($id)
     {
         $data = PembayaranService::findOrFail($id);
